@@ -1,22 +1,28 @@
-package interactionWithwebElements;
+package advancedElementIntereaction;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import utils.ConfigReader;
 
-public class ContactUsSendKeys {
+public class FillContatctUsJavaScript {
 
 	public static void main(String[] args) {
 		ConfigReader configReader = new ConfigReader();
 		WebDriver driver = configReader.launchUrl();
-		driver.findElement(By.xpath("//a[contains(text(),'Contact Us Form Test')]")).click();
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		driver.findElement(By.linkText("CONTACT US FORM TEST")).click();
 		driver.findElement(By.xpath("//input[@name='first_name']")).sendKeys("nabeel ");
 		driver.findElement(By.xpath("//input[@name='last_name']")).sendKeys("shaikh");
 		driver.findElement(By.name("email")).sendKeys("abcd@gmail.com");
 		driver.findElement(By.xpath("//textarea[@name='message']")).sendKeys("shaikh");
-		driver.findElement(By.xpath("//input[@type='submit']")).click();
-		driver.quit();
+
+		WebElement submit = driver.findElement(By.xpath("//input[@type='submit']"));
+		js.executeScript("arguments[0].click()", submit);
+
+		// js.executeScript("document.getElementsByClassName('contact_button')[1].click()");
 	}
 
 }

@@ -4,8 +4,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.WebElement;
 
 import utils.ConfigReader;
 
@@ -13,13 +14,11 @@ public class HandleWindows {
 
 	public static void main(String[] args) throws InterruptedException {
 		ConfigReader configReader = new ConfigReader();
-		String driverPath = configReader.getDriverPath();
-		System.setProperty("webdriver.chrome.driver", driverPath);
-		WebDriver driver = new ChromeDriver();
-		driver.manage().window().maximize();
-		driver.get("https://www.automationtesting.co.uk/popups.html");
-
-		driver.findElement(By.cssSelector("div.col-12.col-12-small > button:nth-child(4)")).click();
+		WebDriver driver = configReader.launchUrl();
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		WebElement popUpAndAlerts = driver.findElement(By.xpath("//a[contains(text(),'Pop Ups & Alerts')]"));
+		js.executeScript("arguments[0].scrollIntoView", popUpAndAlerts);
+		popUpAndAlerts.click();
 
 		String firstWindowHandle = driver.getWindowHandle();
 		System.out.println("first" + firstWindowHandle);
