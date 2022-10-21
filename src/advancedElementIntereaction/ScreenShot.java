@@ -12,7 +12,7 @@ public class ScreenShot {
 
 		ConfigReader configReader = new ConfigReader();
 		WebDriver driver = configReader.launchUrl();
-		configReader.takeScreenShot("FirstSs1");
+		configReader.takeScreenShot("FirstSs1111");
 		System.out.println("Done");
 		driver.quit();
 	}

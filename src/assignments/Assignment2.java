@@ -1,7 +1,9 @@
 package assignments;
 
 import java.time.Duration;
+import java.util.ArrayList;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -26,14 +28,44 @@ Verify that the account is created successfully.
  */
 public class Assignment2 {
 
+	public static ArrayList<String> randomCredentials() {
+		ArrayList<String> randomCredentials = new ArrayList<String>();
+
+		String ranFirstName = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+		System.out.println("First number = " + ranFirstName);
+		randomCredentials.add(ranFirstName);
+
+		String ranSurname = RandomStringUtils.randomAlphabetic(6).toLowerCase();
+		System.out.println("Surname = " + ranSurname);
+		randomCredentials.add(ranSurname);
+
+		String ranPhoneNum = RandomStringUtils.randomNumeric(10);
+		System.out.println("Phone number = " + ranPhoneNum);
+		randomCredentials.add(ranPhoneNum);
+
+		String ranEmail = ranFirstName + ranSurname + "@gmail.com";
+		randomCredentials.add(ranEmail);
+
+		String ranPass = RandomStringUtils.randomAlphanumeric(9);
+		System.out.println("Password = " + ranPass);
+		randomCredentials.add(ranPass);
+
+		return randomCredentials;
+
+	}
+
 	public static void facebookSignUp(WebDriver driver) {
-		driver.findElement(By.cssSelector("[aria-label='First name']")).sendKeys("Virat");
-		driver.findElement(By.cssSelector("[aria-label='Surname']")).sendKeys("Sharma");
-		driver.findElement(By.cssSelector("[aria-label='Mobile number or email address']")).sendKeys("12345678890");
+		ArrayList<String> allCredentialsList = randomCredentials();
+
+		System.out.println("total number of credentisals = " + allCredentialsList.size());
+		driver.findElement(By.cssSelector("[aria-label='First name']")).sendKeys(allCredentialsList.get(0));
+		driver.findElement(By.cssSelector("[aria-label='Surname']")).sendKeys(allCredentialsList.get(1));
+		driver.findElement(By.cssSelector("[aria-label='Mobile number or email address']"))
+				.sendKeys(allCredentialsList.get(2));
 		driver.findElement(By.cssSelector("[aria-label='Mobile number or email address']")).clear();
 		driver.findElement(By.cssSelector("[aria-label='Mobile number or email address']"))
-				.sendKeys("viratsharma123@gmail.com");
-		driver.findElement(By.id("password_step_input")).sendKeys("user1@123");
+				.sendKeys(allCredentialsList.get(3));
+		driver.findElement(By.id("password_step_input")).sendKeys(allCredentialsList.get(4));
 		WebElement dayDropDown = driver.findElement(By.id("day"));
 		Select dayDrop = new Select(dayDropDown);
 		dayDrop.selectByIndex(0);
@@ -47,8 +79,7 @@ public class Assignment2 {
 		yrDrop.selectByVisibleText("2001");
 		driver.findElement(By.xpath("//input[@value='2']")).click();
 
-		driver.findElement(By.cssSelector("[aria-label='Re-enter email address']"))
-				.sendKeys("viratsharma123@gmail.com");
+		driver.findElement(By.cssSelector("[aria-label='Re-enter email address']")).sendKeys(allCredentialsList.get(3));
 
 		System.out.println("clicking on Signing up");
 		driver.findElement(By.xpath("//button[@name='websubmit']")).click();

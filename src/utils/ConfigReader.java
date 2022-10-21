@@ -68,7 +68,6 @@ public class ConfigReader {
 	}
 
 	public void takeScreenShot(String fileName) throws IOException {
-		// from io
 		TakesScreenshot ts = (TakesScreenshot) driver;
 		File src = ts.getScreenshotAs(OutputType.FILE);
 		File dest = new File(".\\screenShots\\" + fileName + ".jpg");
