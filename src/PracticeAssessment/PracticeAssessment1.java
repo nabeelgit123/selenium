@@ -6,8 +6,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import utils.ConfigReader;
 
@@ -25,53 +26,49 @@ Checkout and purchase
 public class PracticeAssessment1 {
 	static WebDriver driver;
 
-	public static void login() throws InterruptedException {
-		driver.findElement(By.cssSelector("#username")).sendKeys("rahulshettyacademy");
-		driver.findElement(By.cssSelector("#password")).sendKeys("learning");
-		WebElement dropDown = driver.findElement(By.cssSelector("[data-style=\"btn-info\"]"));
-		Select option = new Select(dropDown);
-		option.selectByIndex(0);
-		WebElement termsConditions = driver.findElement(By.cssSelector("#terms"));
-		termsConditions.click();
-		System.out.println("terms and condition = " + termsConditions.isSelected());
-
-		driver.findElement(By.cssSelector("#signInBtn")).click();
-
-		Thread.sleep(2000);
+	public static void login() throws Exception {
 		try {
-
-			boolean incorrectDetailsMsg = driver.findElement(By.cssSelector("div.alert.alert-danger.col-md-12"))
-					.isDisplayed();
-			if (incorrectDetailsMsg) {
-				WebElement erMsg = driver.findElement(By.cssSelector("div.alert.alert-danger.col-md-12"));
-				System.out.println("wrong details entered ,error message = " + erMsg.getAttribute("textContent"));
-			}
+			driver.findElement(By.cssSelector("#username")).sendKeys("rahulshettyacademy");
+			driver.findElement(By.cssSelector("#password")).sendKeys("learning");
+			WebElement dropDown = driver.findElement(By.cssSelector("[data-style=\"btn-info\"]"));
+			Select option = new Select(dropDown);
+			option.selectByIndex(0);
+			WebElement termsConditions = driver.findElement(By.cssSelector("#terms"));
+			termsConditions.click();
+			System.out.println("terms and condition = " + termsConditions.isSelected());
+			driver.findElement(By.cssSelector("#signInBtn")).click();
 		} catch (Exception e) {
-			System.out.println("NO ERROR ALL DETAILS RIGHT");
-			WebElement siteName = driver.findElement(By.cssSelector("div > nav > a"));
-			if (siteName.isDisplayed()) {
-				System.out.println("all details are correct successfully logged into " + siteName.getText());
-				System.out.println("Adding items to cart ");
-				cartToCheckout();
+			WebElement errorMsg = new WebDriverWait(driver, Duration.ofSeconds(5)).until(
+					ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.alert.alert-danger.col-md-12")));
+			System.out.println(errorMsg.isDisplayed());
+			if (errorMsg.isDisplayed()) {
+				throw new Exception("login failed" + errorMsg.getText());
 			}
 		}
-
 	}
 
-	public static void cartToCheckout() throws InterruptedException {
+	public static void verifyHomePg() throws Exception {
+		WebElement loginSuccess = new WebDriverWait(driver, Duration.ofSeconds(10))
+				.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(" div > nav > a")));
+		String text = loginSuccess.getText();
+		System.out.println(text);
+	}
+
+	public static void addToCart() throws Exception {
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-		String quantity = "4";
-		JavascriptExecutor js = (JavascriptExecutor) driver;
 		// pressing add to cart button
+		JavascriptExecutor js = (JavascriptExecutor) driver;
 		WebElement checkOutOption = driver.findElement(By.cssSelector("#navbarResponsive > ul > li > a"));
 		System.out.println("before adding item to cart ,cart count = " + checkOutOption.getText());
 		WebElement addToCartBtn = driver
 				.findElement(By.cssSelector("app-card:nth-child(1) > div > div.card-footer > button"));
 		js.executeScript("arguments[0].scrollIntoView;", addToCartBtn);
 		addToCartBtn.click();
-		// pressing checkout button and getting the text of checkout (for count of
-		// items)
+	}
 
+	public static void cartCountVerify() throws Exception {
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		WebElement checkOutOption = driver.findElement(By.cssSelector("#navbarResponsive > ul > li > a"));
 		js.executeScript("arguments[0].scrollIntoView;", checkOutOption);
 		String expectedCountOfItems = "1";
 		String actualCartCount = checkOutOption.getText();
@@ -79,38 +76,42 @@ public class PracticeAssessment1 {
 		if (actualCartCount.contains(expectedCountOfItems))
 			System.out.println("correct count of items added to the cart");
 		else
-			System.out.println("correct count of items not added to the cart");
+			throw new Exception("correct count of items not added to the cart");
+	}
 
+	public static void addQuantity(String quantity) throws Exception {
+		WebElement checkOutOption = driver.findElement(By.cssSelector("#navbarResponsive > ul > li > a"));
 		checkOutOption.click();
 		String itemName = driver.findElement(By.xpath("//h4/a")).getText();
 		System.out.println("item added to cart = " + itemName);
 		driver.findElement(By.cssSelector("#exampleInputEmail1")).clear();
 		driver.findElement(By.cssSelector("#exampleInputEmail1")).sendKeys(quantity);
+	}
+
+	public static void priceVerify(String quantity) throws Exception {
 		// getting price of one product then applying logic to get price according to
 		// the quantity
-		String priceOfOne = driver.findElement(By.cssSelector(" td:nth-child(3) > strong")).getAttribute("textContent");
-		String priceModi = priceFormatter(priceOfOne);
-		double price = Double.parseDouble(priceModi);
+
+		String priceOfOne = driver.findElement(By.cssSelector(" td:nth-child(3) > strong")).getText();
+		double priceFormatted = priceFormatter(priceOfOne);
 		int quan = Integer.parseInt(quantity);
-		double totalExpected = quan * price;
+		double totalExpected = quan * priceFormatted;
 
-		String getActualTotal = driver.findElement(By.cssSelector("h3 > strong")).getAttribute("textContent");
-		String actualTotalModi = priceFormatter(getActualTotal);
-		double actualTotal = Double.parseDouble(actualTotalModi);
+		String getActualTotal = driver.findElement(By.cssSelector("h3 > strong")).getText();
+		double actualTotalFormatted = priceFormatter(getActualTotal);
 		System.out.println("expected toptal = " + totalExpected);
-		System.out.println("actual total = " + actualTotal);
-
-		if (totalExpected == actualTotal)
+		System.out.println("actual total = " + actualTotalFormatted);
+		if (totalExpected == actualTotalFormatted)
 			System.out.println("total price expected and actual  are same");
 		else
-			System.out.println("Total is not as expected");
+			throw new Exception("Total is not as expected");
+
+	}
+
+	public static void purchaseDetails() throws Exception {
 		driver.findElement(By.cssSelector("tbody > tr:nth-child(3) > td:nth-child(5) > button")).click();
 		// purchasing the product last step
 		System.out.println("purchasing last step");
-		purchaseOption();
-	}
-
-	public static void purchaseOption() {
 		driver.findElement(By.cssSelector("#country")).sendKeys("India");
 		WebElement checkbox = driver.findElement(By.cssSelector(
 				"body > app-root > app-shop > div > app-checkout > div > div.checkbox.checkbox-primary > label"));
@@ -123,6 +124,10 @@ public class PracticeAssessment1 {
 		} catch (Exception e) {
 			System.out.println("popup of terms and conditions didnt appear this time");
 		}
+	}
+
+	public static void purchaseVerify() throws Exception {
+
 		driver.findElement(By.cssSelector("div.suggestions > ul > li > a")).click();
 		System.out.println("clicking purchase btn");
 		driver.findElement(
@@ -133,13 +138,11 @@ public class PracticeAssessment1 {
 		if (successPurchaseMsg) {
 			String msg = driver.findElement(By.cssSelector(" div:nth-child(5) > div")).getText();
 			System.out.println("success purchase msg shown, message shown = " + msg);
-
 		} else
-			System.out.println("success purchaase not shown");
+			throw new Exception("purchaseVerify failed with : success message not displayed");
 	}
 
-	public static String priceFormatter(String price) {
-		// System.out.println(price.length());
+	public static double priceFormatter(String price) {
 		System.out.println(price);
 		price = price.replace("₹", " ");
 		System.out.println(price);
@@ -147,26 +150,27 @@ public class PracticeAssessment1 {
 		System.out.println(price);
 		price = price.replace(" ", "");
 		System.out.println(price);
-		return (price);
-
+		double formattedPrice = Double.parseDouble(price);
+		return (formattedPrice);
 	}
 
 	public static void main(String[] args) throws InterruptedException {
+		String quantity = "4";
 		ConfigReader configReader = new ConfigReader();
-		String driverPath = configReader.getDriverPath();
-		System.setProperty("webdriver.chrome.driver", driverPath);
-		driver = new ChromeDriver();
-		driver.manage().window().maximize();
-		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
-		driver.get("https://rahulshettyacademy.com/loginpagePractise/");
-		System.out.println("Login details");
+		driver = configReader.launchAssessmentUrl();
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-		WebElement siginBtn = driver.findElement(By.cssSelector("#signInBtn"));
-		if (siginBtn.isDisplayed())
+		try {
 			login();
-		else
-			System.out.println("sigin in option not available");
-
+			verifyHomePg();
+			addToCart();
+			cartCountVerify();
+			addQuantity(quantity);
+			priceVerify(quantity);
+			purchaseDetails();
+			purchaseVerify();
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 
 }
